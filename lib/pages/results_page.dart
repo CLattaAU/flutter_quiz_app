@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quiz_app/pages/quiz_page.dart';
+// import 'package:flutter_quiz_app/pages/quiz_page.dart';
 
 class ResultsPage extends StatelessWidget {
-  const ResultsPage({super.key, required this.score});
+  const ResultsPage({super.key, required this.score, required this.onRestart});
 
   final int score;
+  final VoidCallback onRestart;
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +22,8 @@ class ResultsPage extends StatelessWidget {
             TextButton(
               child: Text('Restart'),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => QuizPage()),
-                );
+                onRestart();
+                Navigator.pop(context);
               },
             ),
           ],

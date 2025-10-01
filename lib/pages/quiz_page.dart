@@ -3,6 +3,7 @@ import 'package:flutter_quiz_app/data/sample_questions.dart';
 import 'package:flutter_quiz_app/models/answer.dart';
 import 'package:flutter_quiz_app/models/question.dart';
 import 'package:flutter_quiz_app/pages/results_page.dart';
+import 'package:flutter_quiz_app/widgets/answer_button.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -31,9 +32,19 @@ class _QuizPageState extends State<QuizPage> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ResultsPage(score: score)),
+        MaterialPageRoute(
+          builder: (context) =>
+              ResultsPage(score: score, onRestart: _restartQuiz),
+        ),
       );
     }
+  }
+
+  void _restartQuiz() {
+    setState(() {
+      score = 0;
+      questionIndex = 0;
+    });
   }
 
   @override
@@ -41,7 +52,9 @@ class _QuizPageState extends State<QuizPage> {
     return Scaffold(
       appBar: AppBar(
         leading: Icon(Icons.flutter_dash),
-        title: Text('Quiz App Question: ${questionIndex + 1}'),
+        title: Text(
+          'Quiz App Question: ${questionIndex + 1} of ${questions.length}',
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -56,13 +69,14 @@ class _QuizPageState extends State<QuizPage> {
             Expanded(
               child: ListView.separated(
                 itemCount: questions[questionIndex].answers.length,
-                itemBuilder: (context, index) => ElevatedButton(
-                  onPressed: () => _handleAnswerSelected(
+                itemBuilder: (context, index) => AnswerButton(
+                  onTap: () => _handleAnswerSelected(
                     questions[questionIndex].answers[index].isCorrect,
                   ),
-                  child: Text(questions[questionIndex].answers[index].text),
+                  text: questions[questionIndex].answers[index].text,
                 ),
-                separatorBuilder: (context, index) => const Divider(),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 10.0),
               ),
             ),
           ],

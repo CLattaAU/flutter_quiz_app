@@ -66,19 +66,19 @@ class _QuizPageState extends State<QuizPage> {
               style: TextStyle(),
             ),
             SizedBox(height: 30),
-            Expanded(
-              child: ListView.separated(
-                itemCount: questions[questionIndex].answers.length,
-                itemBuilder: (context, index) => AnswerButton(
-                  onTap: () => _handleAnswerSelected(
-                    questions[questionIndex].answers[index].isCorrect,
-                  ),
-                  text: questions[questionIndex].answers[index].text,
-                ),
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 10.0),
-              ),
-            ),
+            // Expanded(
+            //   child: ListView.separated(
+            //     itemCount: questions[questionIndex].answers.length,
+            //     itemBuilder: (context, index) => AnswerButton(
+            //       onTap: () => _handleAnswerSelected(
+            //         questions[questionIndex].answers[index].isCorrect,
+            //       ),
+            //       text: questions[questionIndex].answers[index].text,
+            //     ),
+            //     separatorBuilder: (context, index) =>
+            //         const SizedBox(height: 10.0),
+            //   ),
+            // ),
           ],
         ),
       ),

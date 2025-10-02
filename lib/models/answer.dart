@@ -25,7 +25,7 @@ class Answer {
       id: map['id'],
       questionId: map['questionId'],
       text: map['text'],
-      isCorrect: map['isCorrect'],
+      isCorrect: map['isCorrect'] == 1,
     );
   }
 

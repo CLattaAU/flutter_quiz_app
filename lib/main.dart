@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quiz_app/pages/quiz_page.dart';
+import 'package:flutter_quiz_app/services/db_initializer.dart';
+import 'package:flutter_quiz_app/services/db_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  DBInitializer.init();
+  DBService.initDB();
   runApp(MaterialApp(home: FlutterQuizApp()));
 }
 

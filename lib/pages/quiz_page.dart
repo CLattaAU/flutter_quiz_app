@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quiz_app/data/sample_questions.dart';
+// import 'package:flutter_quiz_app/data/sample_questions.dart';
 import 'package:flutter_quiz_app/models/answer.dart';
 import 'package:flutter_quiz_app/models/question.dart';
 import 'package:flutter_quiz_app/pages/results_page.dart';
+import 'package:flutter_quiz_app/services/db_service.dart';
 import 'package:flutter_quiz_app/widgets/answer_button.dart';
 
 class QuizPage extends StatefulWidget {
@@ -13,47 +14,79 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  int questionIndex = 0;
-  int score = 0;
-  List<Answer> answers = [];
-  Question? question;
+  List<Question> _questions = [];
+  List<Answer> _currentAnswers = [];
 
-  void _handleAnswerSelected(bool isCorrect) {
-    if (isCorrect) {
-      setState(() {
-        score++;
-      });
-    }
+  int _currentIndex = 0;
+  int _currentScore = 0;
 
-    if (questionIndex + 1 < questions.length) {
+  @override
+  void initState() {
+    super.initState();
+    _loadQuestions();
+  }
+
+  Future<void> _loadQuestions() async {
+    final questions = await DBService.getQuestions();
+
+    if (questions.isNotEmpty) {
+      final answers = await DBService.getAnswersForQuestion(questions[0].id!);
       setState(() {
-        questionIndex++;
+        _questions = questions;
+        _currentAnswers = answers;
       });
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              ResultsPage(score: score, onRestart: _restartQuiz),
-        ),
-      );
     }
   }
 
   void _restartQuiz() {
     setState(() {
-      score = 0;
-      questionIndex = 0;
+      _currentIndex = 0;
+      _currentScore = 0;
     });
+    _loadQuestions();
+  }
+
+  void _nextQuestion(bool isCorrect) async {
+    if (isCorrect) {
+      setState(() {
+        _currentScore++;
+      });
+    }
+    if (_currentIndex + 1 < _questions.length) {
+      final nextIndex = _currentIndex + 1;
+      final answers = await DBService.getAnswersForQuestion(
+        _questions[nextIndex].id!,
+      );
+
+      setState(() {
+        _currentIndex = nextIndex;
+        _currentAnswers = answers;
+      });
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ResultsPage(
+            score: _currentScore,
+            // total: _questions.length,
+            onRestart: _restartQuiz, // pass restart callback if you want
+          ),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_questions.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: Icon(Icons.flutter_dash),
         title: Text(
-          'Quiz App Question: ${questionIndex + 1} of ${questions.length}',
+          'Quiz App Question: ${_currentIndex + 1} of ${_questions.length}',
         ),
       ),
       body: Padding(
@@ -61,19 +94,17 @@ class _QuizPageState extends State<QuizPage> {
         child: Column(
           children: [
             Text(
-              questions[questionIndex].text,
+              _questions[_currentIndex].text,
               textAlign: TextAlign.left,
               style: TextStyle(),
             ),
             SizedBox(height: 30),
             Expanded(
               child: ListView.separated(
-                itemCount: questions[questionIndex].answers.length,
+                itemCount: _currentAnswers.length,
                 itemBuilder: (context, index) => AnswerButton(
-                  onTap: () => _handleAnswerSelected(
-                    questions[questionIndex].answers[index].isCorrect,
-                  ),
-                  text: questions[questionIndex].answers[index].text,
+                  onTap: () => _nextQuestion(_currentAnswers[index].isCorrect),
+                  text: _currentAnswers[index].text,
                 ),
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: 10.0),

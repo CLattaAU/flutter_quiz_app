@@ -102,4 +102,48 @@ class DBService {
       return Answer.fromMap(maps[i]);
     });
   }
+
+  static Future<void> logAnswer({
+    required int questionId,
+    required int selectedAnswerId,
+    required bool wasCorrect,
+  }) async {
+    final db = await DBService.initDB();
+    await db.insert('activity_log', {
+      'questionId': questionId,
+      'selectedAnswerId': selectedAnswerId,
+      'wasCorrect': wasCorrect ? 1 : 0,
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+  }
+
+  static Future<List<Map<String, dynamic>>> getRecentAttempts({
+    int limit = 10,
+  }) async {
+    final db = await DBService.initDB();
+
+    final result = await db.rawQuery(
+      '''
+      SELECT al.id,
+      q.text as questionText,
+      a.text as answerText,
+      al.wasCorrect,
+      al.timestamp
+
+      FROM activity_log al
+      JOIN questions q ON q.id = al.questionId
+      JOIN answers a ON a.id = al.selectedAnswerId
+      ORDER BY al.timestamp DESC
+      LIMIT ?
+    ''',
+      [limit],
+    );
+
+    return result;
+  }
+
+  static Future<void> clearActivityLog() async {
+    final db = await DBService.initDB();
+    await db.delete('activity_log');
+  }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_quiz_app/models/question.dart';
 import 'package:flutter_quiz_app/pages/results_page.dart';
 import 'package:flutter_quiz_app/services/db_service.dart';
 import 'package:flutter_quiz_app/widgets/answer_button.dart';
+import 'package:flutter_quiz_app/pages/recent_attempts_page.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -76,6 +77,19 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
+  void _handleAnswerTap(Answer answer) async {
+    final question = _questions[_currentIndex];
+
+    // Log the answer
+    await DBService.logAnswer(
+      questionId: question.id!,
+      selectedAnswerId: answer.id!,
+      wasCorrect: answer.isCorrect,
+    );
+
+    _nextQuestion(answer.isCorrect);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_questions.isEmpty) {
@@ -84,10 +98,23 @@ class _QuizPageState extends State<QuizPage> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(Icons.flutter_dash),
+        leading: Icon(
+          Icons.flutter_dash,
+          size: 40.0,
+          color: const Color.fromARGB(255, 20, 113, 189),
+        ),
         title: Text(
           'Quiz App Question: ${_currentIndex + 1} of ${_questions.length}',
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.history),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const RecentAttemptsPage()),
+          );
+        },
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -103,7 +130,7 @@ class _QuizPageState extends State<QuizPage> {
               child: ListView.separated(
                 itemCount: _currentAnswers.length,
                 itemBuilder: (context, index) => AnswerButton(
-                  onTap: () => _nextQuestion(_currentAnswers[index].isCorrect),
+                  onTap: () => _handleAnswerTap(_currentAnswers[index]),
                   text: _currentAnswers[index].text,
                 ),
                 separatorBuilder: (context, index) =>

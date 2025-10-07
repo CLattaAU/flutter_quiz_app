@@ -8,7 +8,10 @@ void main() async {
 
   DBInitializer.init();
   DBService.initDB();
-  runApp(MaterialApp(home: FlutterQuizApp()));
+
+  runApp(
+    MaterialApp(home: FlutterQuizApp(), debugShowCheckedModeBanner: false),
+  );
 }
 
 class FlutterQuizApp extends StatelessWidget {
